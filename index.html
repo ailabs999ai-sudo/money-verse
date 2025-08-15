@@ -990,7 +990,7 @@
             <div id="profile-view" class="page-section">
                 <div class="profile-header">
                     <div class="profile-icon">
-                        <img id="profile-logo" src="https://via.placeholder.com/80" alt="Profile Picture">
+                        <i class="fas fa-user" id="profile-icon-placeholder"></i>
                     </div>
                     <h3 id="profile-username">User</h3>
                     <div class="telegram-info">
@@ -1110,12 +1110,12 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const name = urlParams.get('name');
                 const id = urlParams.get('id');
-                const photoUrl = urlParams.get('photo_url');
+                const refId = urlParams.get('ref');
                 return { 
                     username: name ? decodeURIComponent(name) : 'User',
                     telegramName: name ? decodeURIComponent(name) : 'Telegram Name',
                     telegramId: id ? id : 'default_user_id',
-                    telegramPhoto: photoUrl ? decodeURIComponent(photoUrl) : null
+                    referredBy: refId || null
                 };
             };
             const params = getUrlParams();
@@ -1187,12 +1187,30 @@
                 if (docSnap.exists()) {
                     appData = { ...appData, ...docSnap.data() };
                 } else {
-                    await setDoc(userDocRef, {
+                    // নতুন ইউজারের ডেটাবেস তৈরি করা
+                    const newUserData = {
                         ...appData,
                         telegramName: params.telegramName,
                         username: params.username,
-                        telegramPhoto: params.telegramPhoto
-                    });
+                        telegramId: params.telegramId,
+                        referredBy: params.referredBy || null
+                    };
+
+                    await setDoc(userDocRef, newUserData);
+
+                    // যদি রেফারেল থাকে, রেফারেলদাতার রেফারেল কাউন্ট আপডেট করা
+                    if (params.referredBy) {
+                        const referrerDocRef = doc(db, 'users', params.referredBy);
+                        const referrerDocSnap = await getDoc(referrerDocRef);
+                        if (referrerDocSnap.exists()) {
+                            const referrerData = referrerDocSnap.data();
+                            await updateDoc(referrerDocRef, {
+                                referredUsersCount: (referrerData.referredUsersCount || 0) + 1
+                            });
+                        }
+                    }
+
+                    appData = newUserData;
                 }
                 updateUI();
                 checkAndResetDailyTasks();
@@ -1208,10 +1226,10 @@
                 telegramNameDisplayEl.textContent = params.telegramName;
                 profileUsernameEl.textContent = params.username;
                 profileTelegramNameEl.textContent = params.telegramName;
-                if (params.telegramPhoto) {
-                    telegramLogoDashboard.src = params.telegramPhoto;
-                    telegramLogoProfile.src = params.telegramPhoto;
-                }
+                
+                // প্রোফাইল পিকচারের অপশন রিমুভ করা হয়েছে
+                document.getElementById('telegram-logo').style.display = 'none';
+                document.getElementById('profile-icon-placeholder').style.display = 'block';
 
                 totalBalanceDisplayEl.textContent = `${totalEarnings.toFixed(2)} VET`;
                 earningsDisplayElement.textContent = `${totalEarnings.toFixed(2)} VET`;
