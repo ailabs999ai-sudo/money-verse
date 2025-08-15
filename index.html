@@ -140,7 +140,7 @@
             color: #0088CC;
             font-size: 1.2rem;
         }
-        /* New profile picture styles - REMOVED */
+        /* New profile picture styles */
         .profile-header-info {
             display: flex;
             align-items: center;
@@ -836,7 +836,6 @@
             <div id="dashboard-view" class="page-section active">
                 <div class="dashboard-header">
                     <div class="profile-header-info">
-                        <div style="display: none;"></div>
                         <div>
                             <h2 id="total-balance-display">0.00 VET</h2>
                             <div class="telegram-info">
@@ -1215,7 +1214,7 @@
                 telegramNameDisplayEl.textContent = params.telegramName;
                 profileUsernameEl.textContent = params.username;
                 profileTelegramNameEl.textContent = params.telegramName;
-
+                
                 totalBalanceDisplayEl.textContent = `${totalEarnings.toFixed(2)} VET`;
                 earningsDisplayElement.textContent = `${totalEarnings.toFixed(2)} VET`;
                 dailyAdsCountElement.textContent = completedTasksToday;
@@ -1357,15 +1356,26 @@
                         appData.earningsFromAds += 0.50;
                         await saveData();
                         updateUI();
+                        
+                        // Reset button state
                         startTaskBtn.disabled = false;
                         startTaskBtn.innerHTML = 'Start Task <i class="fas fa-play-circle"></i>';
                     };
                     
                     if (typeof show_9711122 === 'function') {
-                        show_9711122().then(finishTask).catch(() => {
-                            console.error('Monetag ad failed to load. Simulating task completion.');
-                            finishTask();
-                        });
+                        // This assumes the ad library provides a way to detect when the ad is closed or finished.
+                        // For a simple demo, we will simulate this behavior with a timeout.
+                        const adPromise = show_9711122();
+                        if (adPromise && typeof adPromise.then === 'function') {
+                            adPromise.then(finishTask).catch(() => {
+                                console.error('Monetag ad failed to load. Simulating task completion.');
+                                finishTask();
+                            });
+                        } else {
+                            // If the ad doesn't return a promise, just finish the task after a delay
+                            console.warn('Monetag ad function not found. Simulating task completion.');
+                            setTimeout(finishTask, 2000);
+                        }
                     } else {
                         console.warn('Monetag ad function not found. Simulating task completion.');
                         setTimeout(finishTask, 2000);
