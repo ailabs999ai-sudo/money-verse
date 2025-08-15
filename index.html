@@ -140,15 +140,7 @@
             color: #0088CC;
             font-size: 1.2rem;
         }
-        /* New profile picture styles */
-        .profile-picture {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 10px;
-            border: 2px solid var(--primary-color);
-        }
+        /* New profile picture styles - REMOVED */
         .profile-header-info {
             display: flex;
             align-items: center;
@@ -837,7 +829,6 @@
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notification-badge">0</span>
                 </div>
-                <div class="btn"><i class="fas fa-bars"></i></div>
             </div>
         </header>
 
@@ -845,7 +836,7 @@
             <div id="dashboard-view" class="page-section active">
                 <div class="dashboard-header">
                     <div class="profile-header-info">
-                        <img id="telegram-logo" class="profile-picture" src="https://via.placeholder.com/60" alt="Profile Picture">
+                        <div style="display: none;"></div>
                         <div>
                             <h2 id="total-balance-display">0.00 VET</h2>
                             <div class="telegram-info">
@@ -1163,8 +1154,9 @@
             const withdrawalSuccessModal = document.getElementById('withdrawalSuccessModal');
             const withdrawalAmountDisplay = document.getElementById('withdrawal-amount-display');
             const closeWithdrawalModalBtn = document.getElementById('close-withdrawal-modal');
-            const telegramLogoDashboard = document.getElementById('telegram-logo');
-            const telegramLogoProfile = document.getElementById('profile-logo');
+            
+            const profileIconPlaceholder = document.getElementById('profile-icon-placeholder');
+            if (profileIconPlaceholder) profileIconPlaceholder.style.display = 'block';
 
             let appData = {
                 totalEarnings: 0,
@@ -1187,7 +1179,6 @@
                 if (docSnap.exists()) {
                     appData = { ...appData, ...docSnap.data() };
                 } else {
-                    // নতুন ইউজারের ডেটাবেস তৈরি করা
                     const newUserData = {
                         ...appData,
                         telegramName: params.telegramName,
@@ -1198,7 +1189,6 @@
 
                     await setDoc(userDocRef, newUserData);
 
-                    // যদি রেফারেল থাকে, রেফারেলদাতার রেফারেল কাউন্ট আপডেট করা
                     if (params.referredBy) {
                         const referrerDocRef = doc(db, 'users', params.referredBy);
                         const referrerDocSnap = await getDoc(referrerDocRef);
@@ -1209,7 +1199,6 @@
                             });
                         }
                     }
-
                     appData = newUserData;
                 }
                 updateUI();
@@ -1226,10 +1215,6 @@
                 telegramNameDisplayEl.textContent = params.telegramName;
                 profileUsernameEl.textContent = params.username;
                 profileTelegramNameEl.textContent = params.telegramName;
-                
-                // প্রোফাইল পিকচারের অপশন রিমুভ করা হয়েছে
-                document.getElementById('telegram-logo').style.display = 'none';
-                document.getElementById('profile-icon-placeholder').style.display = 'block';
 
                 totalBalanceDisplayEl.textContent = `${totalEarnings.toFixed(2)} VET`;
                 earningsDisplayElement.textContent = `${totalEarnings.toFixed(2)} VET`;
@@ -1484,5 +1469,3 @@
     </script>
 </body>
 </html>
-
-
